@@ -148,11 +148,21 @@ public class PvPManager {
             for (Player player : playersInPvp) {
                 int currentTime = bypassed ? getTimeRemainingInPvPSilent(player) : getTimeRemainingInPvP(player);
                 int timeRemaining = currentTime - 1;
-                if (timeRemaining <= 0 || (settings.isDisablePvpInIgnoredRegion() && isInIgnoredRegion(player))) {
+
+                // Проверяем, находится ли игрок в игнорируемом регионе (в любом мире)
+                boolean inIgnoredRegion = settings.isDisablePvpInIgnoredRegion() && isInIgnoredRegion(player);
+
+                if (timeRemaining <= 0 || inIgnoredRegion) {
+                    // Если время истекло или игрок в игнорируемом регионе - останавливаем PvP
                     if (bypassed) {
                         stopPvPSilent(player);
                     } else {
                         stopPvP(player);
+                    }
+
+                    // Если останавливаем из-за региона, показываем сообщение
+                    if (inIgnoredRegion && timeRemaining > 0) {
+                        player.sendMessage(Utils.color(settings.getMessages().getPvpStoppedInIgnoredRegion()));
                     }
                 } else {
                     updatePvpMode(player, bypassed, timeRemaining);
@@ -218,10 +228,12 @@ public class PvPManager {
     }
 
     private void tryStartPvP(Player attacker, Player defender) {
+        // Сначала проверяем миры
         if (isInIgnoredWorld(attacker) || isInIgnoredWorld(defender)) {
             return;
         }
 
+        // Затем проверяем регионы (в любом мире)
         if (isInIgnoredRegion(attacker) || isInIgnoredRegion(defender)) {
             return;
         }
@@ -447,16 +459,54 @@ public class PvPManager {
             return false;
         }
 
-        Set<String> regions = settings.getIgnoredWgRegions();
-        Set<IWrappedRegion> wrappedRegions = WorldGuardWrapper.getInstance().getRegions(player.getLocation());
-        if (wrappedRegions.isEmpty()) {
-            return false;
-        }
-        for (IWrappedRegion region : wrappedRegions) {
-            if (regions.contains(region.getId().toLowerCase())) {
-                return true;
+        Set<String> ignoredRegions = settings.getIgnoredWgRegions();
+
+        try {
+            // Получаем регионы в текущей локации игрока
+            Set<IWrappedRegion> wrappedRegions = WorldGuardWrapper.getInstance().getRegions(player.getLocation());
+
+            if (!wrappedRegions.isEmpty()) {
+                for (IWrappedRegion region : wrappedRegions) {
+                    if (ignoredRegions.contains(region.getId().toLowerCase())) {
+                        return true;
+                    }
+                }
             }
+
+            // Дополнительно проверяем все регионы во всех мирах
+            for (String regionId : ignoredRegions) {
+                // Проверяем, находится ли игрок в этом регионе, независимо от мира
+                if (isPlayerInRegion(player, regionId)) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Ошибка при проверке регионов WorldGuard: " + e.getMessage());
         }
+
+        return false;
+    }
+    /**
+     * Проверяет, находится ли игрок в указанном регионе
+     * @param player Игрок для проверки
+     * @param regionId ID региона
+     * @return true, если игрок находится в регионе
+     */
+    private boolean isPlayerInRegion(Player player, String regionId) {
+        try {
+            WorldGuardWrapper wrapper = WorldGuardWrapper.getInstance();
+
+            // Получаем регион по ID
+            Optional<IWrappedRegion> region = wrapper.getRegion(player.getWorld(), regionId);
+
+            if (region.isPresent()) {
+                // Проверяем, содержит ли регион локацию игрока
+                return region.get().contains(player.getLocation());
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Ошибка при проверке региона " + regionId + ": " + e.getMessage());
+        }
+
         return false;
     }
 

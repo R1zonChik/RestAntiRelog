@@ -23,6 +23,12 @@ public class Messages implements ConfigurationSection {
     private String inPvpBossbar = "&r&lРежим &c&lPVP &r&l- &a&l%time% &r&l%formated-sec%.";
     @Key("in-pvp-actionbar")
     private String inPvpActionbar = "&r&lРежим &c&lPVP&r&l, не выходите из игры &a&l%time% &r&l%formated-sec%.";
+    @Key("pvp-stopped-in-ignored-region")
+    private String pvpStoppedInIgnoredRegion = "&aВы вошли в защищенную зону. PvP режим отключен.";
+
+    public String getPvpStoppedInIgnoredRegion() {
+        return pvpStoppedInIgnoredRegion;
+    }
     @Key("pvp-leaved")
     private String pvpLeaved = "&aИгрок &c&l%player% &aпокинул игру во время &b&lПВП&a и был наказан.";
     @Key("commands-disabled")
