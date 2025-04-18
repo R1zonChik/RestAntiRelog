@@ -104,7 +104,7 @@ public class Settings extends Configuration {
 
     @Comment("Игнорировать ли PVP deny во время пвп между игроками?")
     @Key("ignore-worldguard")
-    private boolean ignoreWorldGuard = true;
+    private boolean ignoreWorldGuard = false;
 
     @Comment({"Включать ли игроку, который не участвует в пвп и удрарил другого игрока в pvp, pvp режим",
             "Если два игрока дерутся на територии где PVP deny и их ударить, то у того кто ударил так-же включится PVP режим"})
@@ -119,7 +119,7 @@ public class Settings extends Configuration {
 
     @Comment("Отключать ли активный ПВП режим когда игрок заходит в игнорируемый регион?")
     @Key("disable-pvp-in-ignored-region")
-    private boolean disablePvpInIgnoredRegion = false;
+    private boolean disablePvpInIgnoredRegion = true;
 
     @Comment("Скрывать ли сообщения о заходе игроков?")
     @Key("hide-join-message")

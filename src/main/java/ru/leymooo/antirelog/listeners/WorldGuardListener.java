@@ -32,10 +32,10 @@ public class WorldGuardListener implements Listener {
 
         if (attackerInPvp && defenderInPvp) {
             event.setCancelled(true);
-            event.setResult(Result.DENY); //Deny means cancelled means pvp allowed
+            event.setResult(Result.DENY); // Deny значит отмена, то есть пвп разрешено
         } else if (settings.isJoinPvPInWorldGuard() && defenderInPvp) {
             event.setCancelled(true);
-            event.setResult(Result.DENY); //Deny means cancelled means pvp allowed
+            event.setResult(Result.DENY); // Deny значит отмена, то есть пвп разрешено
         }
     }
 }

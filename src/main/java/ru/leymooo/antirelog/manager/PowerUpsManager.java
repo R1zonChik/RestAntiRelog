@@ -27,7 +27,6 @@ public class PowerUpsManager {
         detectPlugins();
     }
 
-
     public boolean disablePowerUps(Player player) {
         if (player.hasPermission("antirelog.bypass.checks")) {
             return false;
@@ -71,7 +70,6 @@ public class PowerUpsManager {
         return disabled;
     }
 
-
     public void disablePowerUpsWithRunCommands(Player player) {
         if (disablePowerUps(player) && !settings.getCommandsOnPowerupsDisable().isEmpty()) {
             settings.getCommandsOnPowerupsDisable().forEach(command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
@@ -92,7 +90,6 @@ public class PowerUpsManager {
         this.libsDisguises = pluginManager.isPluginEnabled("LibsDisguises");
         this.cmi = pluginManager.isPluginEnabled("CMI");
     }
-
 
     private boolean checkEssentials(Player player) {
         boolean disabled = false;
