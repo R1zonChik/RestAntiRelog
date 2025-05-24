@@ -149,20 +149,22 @@ public class PvPManager {
                 int currentTime = bypassed ? getTimeRemainingInPvPSilent(player) : getTimeRemainingInPvP(player);
                 int timeRemaining = currentTime - 1;
 
-                // Проверяем, находится ли игрок в игнорируемом регионе (в любом мире)
+                // Проверяем, находится ли игрок в игнорируемом регионе
                 boolean inIgnoredRegion = settings.isDisablePvpInIgnoredRegion() && isInIgnoredRegion(player);
 
                 if (timeRemaining <= 0 || inIgnoredRegion) {
-                    // Если время истекло или игрок в игнорируемом регионе - останавливаем PvP
                     if (bypassed) {
                         stopPvPSilent(player);
                     } else {
                         stopPvP(player);
-                    }
 
-                    // Если останавливаем из-за региона, показываем сообщение
-                    if (inIgnoredRegion && timeRemaining > 0) {
-                        player.sendMessage(Utils.color(settings.getMessages().getPvpStoppedInIgnoredRegion()));
+                        // Если PvP был остановлен из-за входа в игнорируемый регион, показываем специальное сообщение
+                        if (inIgnoredRegion && timeRemaining > 0) {
+                            String message = Utils.color(settings.getMessages().getPvpStoppedInIgnoredRegion());
+                            if (!isEmpty(message)) {
+                                player.sendMessage(message);
+                            }
+                        }
                     }
                 } else {
                     updatePvpMode(player, bypassed, timeRemaining);
@@ -228,13 +230,23 @@ public class PvPManager {
     }
 
     private void tryStartPvP(Player attacker, Player defender) {
-        // Сначала проверяем миры
+        // Проверяем игнорируемые миры
         if (isInIgnoredWorld(attacker) || isInIgnoredWorld(defender)) {
             return;
         }
 
-        // Затем проверяем регионы (в любом мире)
-        if (isInIgnoredRegion(attacker) || isInIgnoredRegion(defender)) {
+        // Проверяем игнорируемые регионы
+        boolean attackerInIgnoredRegion = isInIgnoredRegion(attacker);
+        boolean defenderInIgnoredRegion = isInIgnoredRegion(defender);
+
+        if (attackerInIgnoredRegion || defenderInIgnoredRegion) {
+            // Логируем для отладки
+            if (attackerInIgnoredRegion) {
+                plugin.getLogger().info("PvP не начато: атакующий " + attacker.getName() + " в игнорируемом регионе");
+            }
+            if (defenderInIgnoredRegion) {
+                plugin.getLogger().info("PvP не начато: защищающийся " + defender.getName() + " в игнорируемом регионе");
+            }
             return;
         }
 
@@ -459,33 +471,47 @@ public class PvPManager {
             return false;
         }
 
-        Set<String> ignoredRegions = settings.getIgnoredWgRegions();
-
         try {
-            // Получаем регионы в текущей локации игрока
-            Set<IWrappedRegion> wrappedRegions = WorldGuardWrapper.getInstance().getRegions(player.getLocation());
+            Set<String> ignoredRegions = settings.getIgnoredWgRegions();
+            WorldGuardWrapper wrapper = WorldGuardWrapper.getInstance();
 
-            if (!wrappedRegions.isEmpty()) {
-                for (IWrappedRegion region : wrappedRegions) {
-                    if (ignoredRegions.contains(region.getId().toLowerCase())) {
-                        return true;
-                    }
-                }
-            }
+            // Получаем все регионы в текущей локации игрока
+            Set<IWrappedRegion> wrappedRegions = wrapper.getRegions(player.getLocation());
 
-            // Дополнительно проверяем все регионы во всех мирах
-            for (String regionId : ignoredRegions) {
-                // Проверяем, находится ли игрок в этом регионе, независимо от мира
-                if (isPlayerInRegion(player, regionId)) {
+            // Проверяем, находится ли игрок в игнорируемом регионе
+            for (IWrappedRegion region : wrappedRegions) {
+                String regionId = region.getId().toLowerCase();
+                if (ignoredRegions.contains(regionId)) {
+                    // Логируем для отладки
+                    plugin.getLogger().info("Игрок " + player.getName() + " находится в игнорируемом регионе: " + regionId);
                     return true;
                 }
             }
+
+            // Если не нашли совпадений по ID, проверяем каждый регион по отдельности
+            for (String ignoredRegionId : ignoredRegions) {
+                try {
+                    Optional<IWrappedRegion> regionOpt = wrapper.getRegion(player.getWorld(), ignoredRegionId);
+                    if (regionOpt.isPresent()) {
+                        IWrappedRegion region = regionOpt.get();
+                        if (region.contains(player.getLocation())) {
+                            // Логируем для отладки
+                            plugin.getLogger().info("Игрок " + player.getName() + " находится в игнорируемом регионе: " + ignoredRegionId);
+                            return true;
+                        }
+                    }
+                } catch (Exception e) {
+                    // Игнорируем ошибки для отдельных регионов
+                }
+            }
         } catch (Exception e) {
+            // Логируем ошибку, но не прерываем работу плагина
             plugin.getLogger().warning("Ошибка при проверке регионов WorldGuard: " + e.getMessage());
         }
 
         return false;
     }
+
     /**
      * Проверяет, находится ли игрок в указанном регионе
      * @param player Игрок для проверки

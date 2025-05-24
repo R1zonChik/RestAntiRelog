@@ -25,10 +25,6 @@ public class Messages implements ConfigurationSection {
     private String inPvpActionbar = "&r&lРежим &c&lPVP&r&l, не выходите из игры &a&l%time% &r&l%formated-sec%.";
     @Key("pvp-stopped-in-ignored-region")
     private String pvpStoppedInIgnoredRegion = "&aВы вошли в защищенную зону. PvP режим отключен.";
-
-    public String getPvpStoppedInIgnoredRegion() {
-        return pvpStoppedInIgnoredRegion;
-    }
     @Key("pvp-leaved")
     private String pvpLeaved = "&aИгрок &c&l%player% &aпокинул игру во время &b&lПВП&a и был наказан.";
     @Key("commands-disabled")
@@ -67,10 +63,6 @@ public class Messages implements ConfigurationSection {
         return pvpStoppedTitle;
     }
 
-    public String getFireworkDisabled() {
-        return fireworkDisabled;
-    }
-
     public String getPvpStoppedSubtitle() {
         return pvpStoppedSubtitle;
     }
@@ -85,6 +77,10 @@ public class Messages implements ConfigurationSection {
 
     public String getInPvpActionbar() {
         return inPvpActionbar;
+    }
+
+    public String getPvpStoppedInIgnoredRegion() {
+        return pvpStoppedInIgnoredRegion;
     }
 
     public String getPvpLeaved() {
@@ -111,6 +107,10 @@ public class Messages implements ConfigurationSection {
         return totemDisabledInPvp;
     }
 
+    public String getFireworkDisabled() {
+        return fireworkDisabled;
+    }
+
     public String getPvpStartedWithPowerups() {
         return pvpStartedWithPowerups;
     }
@@ -127,14 +127,15 @@ public class Messages implements ConfigurationSection {
                 ", pvpStoppedActionbar='" + pvpStoppedActionbar + '\'' +
                 ", inPvpBossbar='" + inPvpBossbar + '\'' +
                 ", inPvpActionbar='" + inPvpActionbar + '\'' +
+                ", pvpStoppedInIgnoredRegion='" + pvpStoppedInIgnoredRegion + '\'' +
                 ", pvpLeaved='" + pvpLeaved + '\'' +
                 ", commandsDisabled='" + commandsDisabled + '\'' +
                 ", itemCooldown='" + itemCooldown + '\'' +
                 ", itemDisabledInPvp='" + itemDisabledInPvp + '\'' +
                 ", totemCooldown='" + totemCooldown + '\'' +
                 ", totemDisabledInPvp='" + totemDisabledInPvp + '\'' +
-                ", pvpStartedWithPowerups='" + pvpStartedWithPowerups + '\'' +
                 ", fireworkDisabled='" + fireworkDisabled + '\'' +
+                ", pvpStartedWithPowerups='" + pvpStartedWithPowerups + '\'' +
                 '}';
     }
 }

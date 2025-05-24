@@ -134,6 +134,7 @@ public class Settings extends Configuration {
     private boolean hideDeathMessage = false;
 
     @Comment("Миры в котором плагин не работает")
+    @Key("disabled-worlds")  // Изменено с disabledWorlds на disabled-worlds для соответствия формату yaml
     private List<String> disabledWorlds = Arrays.asList("world1", "world2");
     @Ignore
     private Set<String> disabledWorldsSet;
